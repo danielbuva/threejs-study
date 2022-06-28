@@ -3,6 +3,7 @@ import * as THREE from "three";
 import * as dat from "lil-gui";
 import gsap from "gsap";
 import "./style.css";
+import { Texture } from "three";
 
 /* parameters */
 const parameters = {
@@ -17,6 +18,72 @@ const sizes = {
   height: window.innerHeight,
 };
 let aspectRatio = sizes.width / sizes.height;
+
+/* textures */
+// const image = new Image(); // create new instance of image
+// const doorTexture = new THREE.Texture(image); // changes format of the image
+
+// image.onload = () => {
+//   doorTexture.needsUpdate = true;
+// };
+
+// image.src = "/textures/door/albedo.jpg";
+
+// how loading images work under the hood ^ better to do this v
+
+// const load = () => {
+//   console.log("load");
+// }; // can send 3 functions after texture path
+// const progress = () => {
+//   console.log("progress");
+// }; // if the texture doesn't work, add these callback functions to see what is happening and spot errors
+// const error = () => {
+//   console.log("error");
+// };
+
+const loadingManager = new THREE.LoadingManager(); // useful for loading bars ~ can also use with other types of loaders(fonts, etc)
+
+// loadingManager.onStart = () => {
+//   // can add parameters to get more info about each state
+//   console.log("on start");
+// };
+// loadingManager.onLoaded = () => {
+//   console.log("on loaded");
+// };
+// loadingManager.onProgress = () => { // https://github.com/mrdoob/three.js/issues/10439#issuecomment-293260145
+//   console.log("on progress");
+// };
+// loadingManager.onError = () => {
+//   console.log("on error");
+// };
+
+/* loading textures */
+const textureLoader = new THREE.TextureLoader(loadingManager); // one texture loader to load all textures
+const doorAlbedo = textureLoader.load("/textures/minecraft.png" /* , load, progress, error */);
+const doorAmbientOcclusion = textureLoader.load("/textures/door/ambientocclusion.jpg");
+const doorNormal = textureLoader.load("/textures/door/normal.jpg");
+const doorApha = textureLoader.load("/textures/door/alpha.jpg");
+const doorHeight = textureLoader.load("/textures/door/height.jpg");
+const doorMetalness = textureLoader.load("/textures/door/metalness.jpg");
+const doorRoughness = textureLoader.load("/textures/door/roughness.jpg");
+
+/* transforming textures */
+
+// doorAlbedo.repeat.x = 2;
+// doorAlbedo.repeat.y = 3;
+// doorAlbedo.wrapS = THREE.RepeatWrapping;
+// doorAlbedo.wrapT = THREE.RepeatWrapping;
+// doorAlbedo.wrapS = THREE.MirroredRepeatWrapping;
+// doorAlbedo.wrapT = THREE.MirroredRepeatWrapping;
+// doorAlbedo.offset.x = 0.5;
+// doorAlbedo.offset.y = 0.5;
+// doorAlbedo.rotation = Math.PI / 1;
+// doorAlbedo.center.x = 0.5;
+// doorAlbedo.center.y = 0.5;
+
+doorAlbedo.generateMipmaps = false;
+doorAlbedo.minFilter = THREE.NearestFilter;
+// doorAlbedo.magFilter = THREE.NearestFilter;
 
 /* cursor */
 const cursor = {
@@ -86,7 +153,7 @@ const scene = new THREE.Scene();
 
 /* object */
 const geometry = new THREE.BoxBufferGeometry(1, 1, 1);
-const material = new THREE.MeshBasicMaterial({ color: parameters.color });
+const material = new THREE.MeshBasicMaterial({ /*color: parameters.color,*/ map: doorAlbedo });
 const mesh = new THREE.Mesh(geometry, material);
 scene.add(mesh);
 
@@ -100,7 +167,7 @@ gui.add(mesh.position, "z", -3, 3, 0.01).name("red cube z"); //range
 gui.add(mesh, "visible"); //boolean
 gui.add(material, "wireframe"); //boolean
 
-//first param is an object, second is the prop to change
+//first arg is an object, second is the prop to change
 gui.addColor(parameters, "color").onChange(() => {
   material.color.set(parameters.color);
 });
